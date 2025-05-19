@@ -1,0 +1,89 @@
+signature Syntax =
+
+NP, S, S' :type ;
+
+
+OLGA, PARIS: NP ;
+LIVES: NP -> S' ;
+IN: NP -> S' -> S' ;
+CLOSURE: S' -> S ;
+
+end
+
+signature Logic = 
+
+e, v, t  : type ;
+
+olga, paris : e;
+live : v -> t ;
+location : v -> e -> t  ;
+experiencer : v -> e -> t ;
+binder exists: (v => t) -> t;
+
+infix[Right] & : t -> t -> t;
+true : t ;
+
+end 
+
+lexicon semantics (Syntax): Logic =
+
+NP := (e -> t) -> t ;
+S := t ;
+S' := (v => t) -> t ;
+
+OLGA := lambda P.P olga ;
+PARIS := lambda P.P paris ;
+LIVES := lambda S g.S(lambda s. exists e. (live e) & (experiencer e s) & (g e)) ;
+IN := lambda N V g. N(lambda n. V (Lambda e. (location e n) & (g e))) ;
+CLOSURE := lambda V.V(Lambda e. true) ;
+
+end
+
+signature String =
+
+o : type ;
+string = o -> o : type ;
+
+e = lambda x. x : string ;
+infix [right] + = lambda a b x. a(b x) : string -> string -> string ;
+
+Olga, lives, in, Paris : string ;
+
+end
+
+lexicon syntax(Syntax) : String =
+
+NP, S, S' := string ; 
+
+OLGA := Olga ;
+PARIS := Paris ;
+LIVES := lambda x. x + lives ;
+IN := lambda x y. y + in + x;
+CLOSURE := lambda x.x
+
+end
+
+
+> " CLOSURE (LIVES OLGA): S " | realize semantics
+Term: exists e. (live e) & ((experiencer e olga) & true) : t
+1 term computed.
+> "CLOSURE (IN PARIS (LIVES OLGA)): S" | realize semantics
+Term:
+exists e. (live e) & ((experiencer e olga) & ((location e paris) & true)) : t
+1 term computed.
+
+"Olga + lives + in + Paris : string" | parse syntax S
+Parsing time:               215μs
+Parse forest building time: 4.81μs
+Term (depth = 4, size = 5): CLOSURE (IN PARIS (LIVES OLGA)) : S
+1 term computed.
+
+"CLOSURE (IN PARIS (LIVES OLGA)) : S" | check syntax
+Term: CLOSURE (IN PARIS (LIVES OLGA)) : S
+1 term computed.
+
+
+
+
+
+
